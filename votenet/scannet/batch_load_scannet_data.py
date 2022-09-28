@@ -15,13 +15,17 @@ import numpy as np
 from load_scannet_data import export
 import pdb
 
-SCANNET_DIR = 'scans'
+SCANNET_DIR = '/mnt/sda/szh/scannet/scans'
 TRAIN_SCAN_NAMES = [line.rstrip() for line in open('meta_data/scannet_train.txt')]
 LABEL_MAP_FILE = 'meta_data/scannetv2-labels.combined.tsv'
 DONOTCARE_CLASS_IDS = np.array([])
-OBJ_CLASS_IDS = np.array([3,4,5,6,7,8,9,10,11,12,14,16,24,28,33,34,36,39])
+# OBJ_CLASS_IDS = np.array([3,4,5,6,7,8,9,10,11,12,14,16,24,28,33,34,36,39])
+OBJ_CLASS_IDS = np.array(
+            ['bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'chair', 'cup', 'curtain', 'desk', 'door', 'dresser',
+             'keyboard', 'lamp', 'laptop', 'monitor',
+             'night_stand', 'plant', 'sofa', 'stool', 'table', 'toilet', 'wardrobe'])
 MAX_NUM_POINT = 50000
-OUTPUT_FOLDER = './scannet_train_detection_data'
+OUTPUT_FOLDER = '/mnt/sda/szh/scannet/scannet_train_detection_data_22'
 
 def export_one_scan(scan_name, output_filename_prefix):    
     mesh_file = os.path.join(SCANNET_DIR, scan_name, scan_name + '_vh_clean_2.ply')
@@ -59,21 +63,32 @@ def batch_export():
     if not os.path.exists(OUTPUT_FOLDER):
         print('Creating new data folder: {}'.format(OUTPUT_FOLDER))                
         os.mkdir(OUTPUT_FOLDER)        
-        
+
     for scan_name in TRAIN_SCAN_NAMES:
         print('-'*20+'begin')
         print(datetime.datetime.now())
         print(scan_name)
-        output_filename_prefix = os.path.join(OUTPUT_FOLDER, scan_name) 
+        output_filename_prefix = os.path.join(OUTPUT_FOLDER, scan_name)
         if os.path.isfile(output_filename_prefix+'_vert.npy'):
             print('File already exists. skipping.')
             print('-'*20+'done')
             continue
-        try:            
+        try:
             export_one_scan(scan_name, output_filename_prefix)
         except:
-            print('Failed export scan: %s'%(scan_name))            
+            print('Failed export scan: %s'%(scan_name))
         print('-'*20+'done')
+    # scan_name = 'scene0000_00'
+    # output_filename_prefix = os.path.join(OUTPUT_FOLDER, scan_name)
+    if os.path.isfile(output_filename_prefix + '_vert.npy'):
+        print('File already exists. skipping.')
+        print('-' * 20 + 'done')
+    try:
+        export_one_scan(scan_name, output_filename_prefix)
+        print('suceess export scan')
+    except:
+        print('Failed export scan: %s' % (scan_name))
+    print('-' * 20 + 'done')
 
 if __name__=='__main__':    
     batch_export()

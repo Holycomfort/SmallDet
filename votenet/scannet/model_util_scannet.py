@@ -14,17 +14,28 @@ from box_util import get_3d_box
 
 class ScannetDatasetConfig(object):
     def __init__(self):
-        self.num_class = 18
+        self.num_class = 22#18
         self.num_heading_bin = 1
-        self.num_size_cluster = 18
+        self.num_size_cluster = 22#18
 
-        self.type2class = {'cabinet':0, 'bed':1, 'chair':2, 'sofa':3, 'table':4, 'door':5,
-            'window':6,'bookshelf':7,'picture':8, 'counter':9, 'desk':10, 'curtain':11,
-            'refrigerator':12, 'showercurtrain':13, 'toilet':14, 'sink':15, 'bathtub':16, 'garbagebin':17}  
+        # self.type2class = {'cabinet':0, 'bed':1, 'chair':2, 'sofa':3, 'table':4, 'door':5,
+        #     'window':6,'bookshelf':7,'picture':8, 'counter':9, 'desk':10, 'curtain':11,
+        #     'refrigerator':12, 'showercurtrain':13, 'toilet':14, 'sink':15, 'bathtub':16, 'garbagebin':17}
+        self.type2class = {'bathtub':0, 'bed':1, 'bench':2, 'bookshelf':3, 'bottle':4, 'chair':5,
+            'cup':6,'curtain':7,'desk':8, 'door':9, 'dresser':10, 'keyboard':11,
+            'lamp':12, 'laptop':13, 'monitor':14, 'nightstand':15, 'plant':16, 'sofa':17, 'stool':18, 'table':19, 'toilet':20, 'wardrobe':21}
+
         self.class2type = {self.type2class[t]:t for t in self.type2class}
-        self.nyu40ids = np.array([3,4,5,6,7,8,9,10,11,12,14,16,24,28,33,34,36,39])
-        self.nyu40id2class = {nyu40id: i for i,nyu40id in enumerate(list(self.nyu40ids))}
-        self.mean_size_arr = np.load(os.path.join(ROOT_DIR,'scannet/meta_data/scannet_means.npz'))['arr_0']
+        # self.nyu40ids = np.array([3,4,5,6,7,8,9,10,11,12,14,16,24,28,33,34,36,39])
+        # self.nyu40id2class = {nyu40id: i for i,nyu40id in enumerate(list(self.nyu40ids))}
+        self.modelnet40s = np.array(
+            ['bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'chair', 'cup', 'curtain', 'desk', 'door', 'dresser',
+             'keyboard', 'lamp', 'laptop', 'monitor',
+             'night_stand', 'plant', 'sofa', 'stool', 'table', 'toilet', 'wardrobe'])
+        self.modelnet40class = {modelnet40: i for i,modelnet40 in enumerate(list(self.modelnet40s))}
+
+        # self.mean_size_arr = np.load(os.path.join(ROOT_DIR,'scannet/meta_data/scannet_means.npz'))['arr_0']   #18 class‘s means，Need to calculate
+        self.mean_size_arr = np.load(os.path.join(ROOT_DIR, 'scannet/scannet_means_22.npz'))['arr_0']  # 18 class‘s means，Need to calculate
         self.type_mean_size = {}
         for i in range(self.num_size_cluster):
             self.type_mean_size[self.class2type[i]] = self.mean_size_arr[i,:]

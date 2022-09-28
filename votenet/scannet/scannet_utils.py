@@ -31,13 +31,26 @@ def represents_int(s):
         return False
 
 
-def read_label_mapping(filename, label_from='raw_category', label_to='nyu40id'):
+# def read_label_mapping(filename, label_from='raw_category', label_to='nyu40id'):
+#     assert os.path.isfile(filename)
+#     mapping = dict()
+#     with open(filename) as csvfile:
+#         reader = csv.DictReader(csvfile, delimiter='\t')
+#         for row in reader:
+#             mapping[row[label_from]] = int(row[label_to])
+#     if represents_int(list(mapping.keys())[0]):
+#         mapping = {int(k):v for k,v in mapping.items()}
+#     return mapping
+def read_label_mapping(filename, label_from='raw_category', label_to='ModelNet40'):
     assert os.path.isfile(filename)
     mapping = dict()
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile, delimiter='\t')
         for row in reader:
-            mapping[row[label_from]] = int(row[label_to])
+            if label_to == 'nyu40id':
+                mapping[row[label_from]] = int(row[label_to])
+            if label_to == 'ModelNet40':
+                mapping[row[label_from]] = (row[label_to])
     if represents_int(list(mapping.keys())[0]):
         mapping = {int(k):v for k,v in mapping.items()}
     return mapping

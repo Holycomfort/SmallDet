@@ -18,12 +18,13 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
+DATA_DIR = '/mnt/sda/szh'
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
 from ap_helper import APCalculator, parse_predictions, parse_groundtruths
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='votenet', help='Model file name [default: votenet]')
-parser.add_argument('--dataset', default='sunrgbd', help='Dataset name. sunrgbd or scannet. [default: sunrgbd]')
+parser.add_argument('--dataset', default='scannet', help='Dataset name. sunrgbd or scannet. [default: sunrgbd]')
 parser.add_argument('--checkpoint_path', default=None, help='Model checkpoint path [default: None]')
 parser.add_argument('--dump_dir', default=None, help='Dump dir to save sample outputs [default: None]')
 parser.add_argument('--num_point', type=int, default=20000, help='Point Number [default: 20000]')
@@ -83,15 +84,13 @@ elif FLAGS.dataset == 'scannet':
     from scannet_detection_dataset import ScannetDetectionDataset, MAX_NUM_OBJ
     from model_util_scannet import ScannetDatasetConfig
     DATASET_CONFIG = ScannetDatasetConfig()
-    TEST_DATASET = ScannetDetectionDataset('val', num_points=NUM_POINT,
-        augment=False,
-        use_color=FLAGS.use_color, use_height=(not FLAGS.no_height))
+    TEST_DATASET = ScannetDetectionDataset('val', num_points=NUM_POINT, augment=False, use_color=FLAGS.use_color, use_height=(not FLAGS.no_height))
+    # TEST_DATASET = ScannetDetectionDataset('all', num_points=NUM_POINT, augment=False, use_color=FLAGS.use_color, use_height=(not FLAGS.no_height))
 else:
     print('Unknown dataset %s. Exiting...'%(FLAGS.dataset))
     exit(-1)
 print(len(TEST_DATASET))
-TEST_DATALOADER = DataLoader(TEST_DATASET, batch_size=BATCH_SIZE,
-    shuffle=FLAGS.shuffle_dataset, num_workers=4, worker_init_fn=my_worker_init_fn)
+TEST_DATALOADER = DataLoader(TEST_DATASET, batch_size=BATCH_SIZE, shuffle=FLAGS.shuffle_dataset, num_workers=4, worker_init_fn=my_worker_init_fn)
 
 # Init the model and optimzier
 MODEL = importlib.import_module(FLAGS.model) # import network module
@@ -117,7 +116,7 @@ criterion = MODEL.get_loss
 # Load the Adam optimizer
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 
-# Load checkpoint if there is any
+# Load checkpoint if there is any   ;Load the trained model
 if CHECKPOINT_PATH is not None and os.path.isfile(CHECKPOINT_PATH):
     checkpoint = torch.load(CHECKPOINT_PATH)
     net.load_state_dict(checkpoint['model_state_dict'])
@@ -146,6 +145,7 @@ def evaluate_one_epoch():
         inputs = {'point_clouds': batch_data_label['point_clouds']}
         with torch.no_grad():
             end_points = net(inputs)
+            # print(end_points)
 
         # Compute loss
         for key in batch_data_label:

@@ -63,8 +63,10 @@ def export(mesh_file, agg_file, seg_file, meta_file, label_map_file, output_file
     instance label as 1-#instance,
     box as (cx,cy,cz,dx,dy,dz,semantic_label)
     """
+    # label_map = scannet_utils.read_label_mapping(label_map_file,
+    #     label_from='raw_category', label_to='nyu40id')
     label_map = scannet_utils.read_label_mapping(label_map_file,
-        label_from='raw_category', label_to='nyu40id')    
+        label_from='raw_category', label_to='ModelNet40')
     mesh_vertices = scannet_utils.read_mesh_vertices_rgb(mesh_file)
 
     # Load scene axis alignment matrix
@@ -83,7 +85,8 @@ def export(mesh_file, agg_file, seg_file, meta_file, label_map_file, output_file
     # Load semantic and instance labels
     object_id_to_segs, label_to_segs = read_aggregation(agg_file)
     seg_to_verts, num_verts = read_segmentation(seg_file)
-    label_ids = np.zeros(shape=(num_verts), dtype=np.uint32) # 0: unannotated
+    # label_ids = np.zeros(shape=(num_verts), dtype=np.uint32)# 0: unannotated
+    label_ids = np.array([None]*num_verts) # 0: unannotated
     object_id_to_label_id = {}
     for label, segs in label_to_segs.items():
         label_id = label_map[label]
@@ -98,7 +101,8 @@ def export(mesh_file, agg_file, seg_file, meta_file, label_map_file, output_file
             instance_ids[verts] = object_id
             if object_id not in object_id_to_label_id:
                 object_id_to_label_id[object_id] = label_ids[verts][0]
-    instance_bboxes = np.zeros((num_instances,7))
+    # instance_bboxes = np.zeros((num_instances,7))
+    instance_bboxes = np.array([[None]*7]*num_instances)
     for obj_id in object_id_to_segs:
         label_id = object_id_to_label_id[obj_id]
         obj_pc = mesh_vertices[instance_ids==obj_id, 0:3]
@@ -136,6 +140,7 @@ def main():
     opt = parser.parse_args()
 
     scan_name = os.path.split(opt.scan_path)[-1]
+    # print(scan_name)
     mesh_file = os.path.join(opt.scan_path, scan_name + '_vh_clean_2.ply')
     agg_file = os.path.join(opt.scan_path, scan_name + '.aggregation.json')
     seg_file = os.path.join(opt.scan_path, scan_name + '_vh_clean_2.0.010000.segs.json')
